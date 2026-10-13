@@ -314,6 +314,19 @@ class PostApiTests(APITestCase):
         response = self.client.post('/api-token-auth/', {'username': 'writer', 'password': 'nope'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    # ---------- Browsable API ----------
+    def test_browsable_api_title_and_login_link(self):
+        response = self.client.get(API_URL, HTTP_ACCEPT='text/html')
+        self.assertContains(response, 'Blog Images List')
+        self.assertContains(response, '/api-auth/login/')
+
+    def test_browsable_api_shows_post_form_after_login(self):
+        self.client.login(username='writer', password='pw-1234')
+        response = self.client.get(API_URL, HTTP_ACCEPT='text/html')
+        self.assertContains(response, 'name="title"')
+        self.assertContains(response, 'name="image"')
+        self.assertNotContains(response, 'name="author"')   # 작성자는 로그인한 사용자로 자동
+
     # ---------- 이미지 파일 ----------
     def test_uploaded_image_is_served(self):
         post = make_post(self.user, image=make_image('served.png'))

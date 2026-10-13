@@ -17,6 +17,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('api-token-auth/', obtain_auth_token),
+    # Browsable API(/api_root/Post/) 오른쪽 위 로그인 링크 -> 로그인하면 HTML form으로 글쓰기 가능
+    path('api-auth/', include('rest_framework.urls')),
     re_path(r'^media/(?P<path>.*)$', media),
 ]
 

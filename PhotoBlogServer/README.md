@@ -19,6 +19,7 @@ python manage.py runserver
 ```
 
 - 웹 : http://127.0.0.1:8000 (오른쪽 위 로그인 → + 버튼으로 사진 글쓰기)
+- API : http://127.0.0.1:8000/api_root/Post/ (오른쪽 위 Log in 하면 아래 HTML form으로 POST 가능)
 - 안드로이드 에뮬레이터에서는 `http://10.0.2.2:8000` 으로 접속
 
 ## API
@@ -75,11 +76,13 @@ curl -X POST -S \
 | 웹 글쓰기 폼에 사진이 없고, 상세 페이지에 사진이 안 나옴 | 사진 업로드 추가, 상세 페이지에 사진 표시, 목록은 최신순 |
 | 큰 사진이 화면 밖으로 넘침 | CSS로 크기 제한 |
 | 글을 지워도 사진 파일이 media 폴더에 남음 | 글 삭제 시 업로드 파일도 삭제 (기본 이미지는 유지) |
+| Browsable API에서 로그인할 방법이 없음 | `/api-auth/` 추가 → `/api_root/Post/` 오른쪽 위 Log in 후 HTML form으로 글쓰기 |
+| 뷰셋 이름 `IntruderImage` | 강의자료 ch05와 같이 `BlogImages` 로 변경 |
 
 ## 테스트 / 코드 커버리지
 
 ```bash
-coverage run manage.py test   # 테스트 66개
+coverage run manage.py test   # 테스트 68개
 coverage report               # 터미널에서 확인
 coverage html                 # htmlcov/index.html 생성
 open htmlcov/index.html

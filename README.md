@@ -13,4 +13,5 @@ photoblog/
 ```
 
 - 서버 실행/테스트 방법 : [PhotoBlogServer/README.md](PhotoBlogServer/README.md)
+- 앱 실행/기능 : [PhotoViewer/README.md](PhotoViewer/README.md)
 - 배포 주소 : https://woojin123123.pythonanywhere.com

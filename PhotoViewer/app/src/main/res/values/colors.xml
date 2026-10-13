@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <!-- 웹 블로그(PhotoBlog) 헤더와 같은 주황색 계열 -->
+    <color name="brand">#FFE67E00</color>
+    <color name="brand_dark">#FFB86500</color>
+    <color name="brand_container">#FFFFDDB8</color>
+    <color name="on_brand_container">#FF2C1600</color>
+</resources>

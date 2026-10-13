@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-of3ij*#ideq(9y+_#hdr5u=&b@_3jr_hnsp(#y+e*dpd_m*!hr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.0.2.2', '.pythonanywhere.com']
+# 10.0.2.2 : 안드로이드 에뮬레이터에서 내 컴퓨터(localhost)로 접속할 때 쓰는 주소
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '.pythonanywhere.com']
 
 # pythonanywhere(https)에서 admin 로그인 시 csrf 에러 나서 추가
 CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com']
@@ -108,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'
 
 TIME_ZONE = 'Asia/Seoul'
 
@@ -126,9 +127,22 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media/"
 
+# 웹에서 글쓰기(+) 할 때 로그인 안 되어 있으면 admin 로그인 화면으로 보냄
+LOGIN_URL = '/admin/login/'
+
+# 업로드 이미지 최대 크기 (10MB)
+MAX_UPLOAD_IMAGE_SIZE = 10 * 1024 * 1024
+
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.IsAdminUser',
+    # 수업 자료/앱은 "Authorization: JWT <토큰>" 형식으로 보냄 -> blog/authentication.py
+    # Token 키워드도 같이 받고, 브라우저(Browsable API)는 세션 로그인으로 사용
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'blog.authentication.JWTKeywordTokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
-    'PAGE_SIZE': 10
+    # 조회(GET)는 누구나, 글쓰기/수정/삭제는 토큰 인증 필요
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
 }

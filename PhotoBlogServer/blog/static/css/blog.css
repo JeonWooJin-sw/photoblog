@@ -58,6 +58,34 @@ h1, h2, h3, h4 {
     color: #000000;
 }
 
+/* 큰 사진을 올리면 화면 밖으로 넘쳐서 크기 제한 */
 .intruder-image-list {
+    display: block;
+    width: 100%;
+    max-height: 420px;
     object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.post-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0 20px;
+    border-radius: 6px;
+}
+
+.summary {
+    color: #555555;
+}
+
+.login-menu {
+    font-size: 14pt !important;
+    margin-top: 12px;
+}
+
+.empty {
+    color: #828282;
+    margin-top: 30px;
 }

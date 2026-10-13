@@ -7,7 +7,12 @@
             {{ post.published_date }}
         </div>
         <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
-        <img src="{{ post.image.url }}" class="rounded intruder-image-list" alt="{{post.title}}">
+        <a href="{% url 'post_detail' pk=post.pk %}">
+            <img src="{{ post.image.url }}" class="intruder-image-list" alt="{{ post.title }}">
+        </a>
+        <p class="summary">{{ post.text|truncatechars:120|linebreaksbr }}</p>
     </div>
+    {% empty %}
+    <p class="empty">아직 게시된 글이 없습니다.</p>
     {% endfor %}
 {% endblock %}

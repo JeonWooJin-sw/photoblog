@@ -1,8 +1,9 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
-    <h1>New post</h1>
-    <form method="POST" class="post-form">
+    <h1>{% if post %}Edit post{% else %}New post{% endif %}</h1>
+    {# 이미지 업로드가 되려면 enctype이 multipart/form-data 여야 함 #}
+    <form method="POST" class="post-form" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="save btn btn-default">Save</button>

@@ -4,7 +4,7 @@
 <div class="post">
     {% if post.published_date %}
     <div class="date">
-        {{ post.published_date }}
+        {{ post.published_date }} · {{ post.author }}
     </div>
     {% endif %}
     {% if user.is_authenticated %}
@@ -13,6 +13,7 @@
     </a>
     {% endif %}
     <h1>{{ post.title }}</h1>
+    <img src="{{ post.image.url }}" class="post-image" alt="{{ post.title }}">
     <p>{{ post.text|linebreaksbr }}</p>
 </div>
 {% endblock %}

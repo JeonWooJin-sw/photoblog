@@ -74,4 +74,5 @@
     <string name="err_http">서버 오류 (HTTP %1$d)</string>
     <string name="err_json">서버 응답 형식이 올바르지 않습니다. (JSON 오류)</string>
     <string name="err_unknown">오류: %1$s</string>
+    <string name="err_local_network_denied">로컬 서버(10.0.2.2)에 접속하려면 \'근처 기기\'(로컬 네트워크) 권한이 필요합니다.\n설정 > 앱 > PhotoViewer > 권한에서 허용해 주세요.</string>
 </resources>

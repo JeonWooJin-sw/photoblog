@@ -1,10 +1,13 @@
 package com.example.photoviewer;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,8 +50,13 @@ public class MainActivity extends AppCompatActivity {
     static final String LOCAL_SERVER = "http://10.0.2.2:8000";
     static final String CLOUD_SERVER = "https://woojin123123.pythonanywhere.com";
 
+    private static final String TAG = "PhotoViewer";
     private static final String PREFS_NAME = "photoviewer";
     private static final String KEY_SERVER = "server_url";
+
+    // Android 17(API 37)부터 10.0.2.2 같은 로컬 네트워크 주소에 접속하려면 이 권한이 필요함
+    private static final String PERMISSION_LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK";
+    private static final int API_LOCAL_NETWORK = 37;
 
     String site_url = LOCAL_SERVER;
     TextView textView;
@@ -71,6 +79,20 @@ public class MainActivity extends AppCompatActivity {
     // 갤러리(Photo Picker)에서 사진 고르기 - 저장공간 권한 없이 사용 가능
     private final ActivityResultLauncher<PickVisualMediaRequest> pickImage =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), this::onImagePicked);
+
+    // 로컬 네트워크 권한 요청 (허용하면 하려던 작업을 이어서 실행)
+    private Runnable pendingNetworkAction;
+    private final ActivityResultLauncher<String> requestLocalNetwork =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                Runnable action = pendingNetworkAction;
+                pendingNetworkAction = null;
+                if (Boolean.TRUE.equals(granted)) {
+                    if (action != null) action.run();
+                } else {
+                    swipeRefresh.setRefreshing(false);
+                    textView.setText(R.string.err_local_network_denied);
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +141,10 @@ public class MainActivity extends AppCompatActivity {
     // 동기화 (수업 자료 onClickDownload + CloadImage)
     // ------------------------------------------------------------------
     public void onClickDownload(View v) {
+        runWithNetworkAccess(this::startDownload);
+    }
+
+    private void startDownload() {
         if (taskDownload != null && taskDownload.isRunning()) {
             taskDownload.cancel();
         }
@@ -185,8 +211,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onError(Exception e) {
+            Log.w(TAG, "동기화 실패", e);
             swipeRefresh.setRefreshing(false);
-            textView.setText(errorMessage(e));
+            textView.setText(errorMessage(e) + errorDetail(e));
         }
     }
 
@@ -194,12 +221,14 @@ public class MainActivity extends AppCompatActivity {
     // 새로운 이미지 게시 (수업 자료 19page onClickUpload + PutPost)
     // ------------------------------------------------------------------
     public void onClickUpload(View v) {
-        if (getToken() == null) {
-            // 글쓰기는 토큰이 필요해서 로그인부터 하고 업로드 화면으로
-            showLoginDialog(this::showUploadDialog);
-        } else {
-            showUploadDialog();
-        }
+        runWithNetworkAccess(() -> {
+            if (getToken() == null) {
+                // 글쓰기는 토큰이 필요해서 로그인부터 하고 업로드 화면으로
+                showLoginDialog(this::showUploadDialog);
+            } else {
+                showUploadDialog();
+            }
+        });
     }
 
     private void showUploadDialog() {
@@ -319,11 +348,14 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onError(Exception e) {
+            Log.w(TAG, "업로드 실패", e);
             setUploading(false);
             if (e instanceof PhotoBlogApi.ApiException && ((PhotoBlogApi.ApiException) e).code == 401) {
                 clearLogin();
             }
-            toast(errorMessage(e));
+            String message = errorMessage(e);
+            if (uploadInfo != null) uploadInfo.setText(message + errorDetail(e));
+            toast(message);
         }
     }
 
@@ -355,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.delete_title)
                 .setMessage(getString(R.string.delete_message, post.title))
-                .setPositiveButton(R.string.delete, (d, which) -> deletePost(post))
+                .setPositiveButton(R.string.delete, (d, which) -> runWithNetworkAccess(() -> deletePost(post)))
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
@@ -378,6 +410,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected void onError(Exception e) {
+                Log.w(TAG, "삭제 실패", e);
                 toast(errorMessage(e));
             }
         });
@@ -428,11 +461,14 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     protected void onError(Exception e) {
+                        Log.w(TAG, "로그인 실패", e);
                         submit.setEnabled(true);
                         progress.setVisibility(View.GONE);
                         boolean wrongPassword = e instanceof PhotoBlogApi.ApiException
                                 && ((PhotoBlogApi.ApiException) e).code == 400;
-                        toast(wrongPassword ? getString(R.string.err_login_failed) : errorMessage(e));
+                        // 토스트는 두 줄까지만 보여서 다이얼로그 안에 오류를 표시
+                        dialog.setMessage(wrongPassword ? getString(R.string.err_login_failed)
+                                : errorMessage(e) + errorDetail(e));
                     }
                 });
             });
@@ -571,7 +607,7 @@ public class MainActivity extends AppCompatActivity {
             showServerDialog();
             return true;
         } else if (id == R.id.action_login) {
-            showLoginDialog(null);
+            runWithNetworkAccess(() -> showLoginDialog(null));
             return true;
         } else if (id == R.id.action_logout) {
             clearLogin();
@@ -612,6 +648,35 @@ public class MainActivity extends AppCompatActivity {
         }
         runningTasks.add(task);
         task.execute();
+    }
+
+    /** 로컬 서버(10.0.2.2 등)에 접속해야 하는데 권한이 없으면 먼저 요청하고, 있으면 바로 실행 */
+    private void runWithNetworkAccess(Runnable action) {
+        if (Build.VERSION.SDK_INT < API_LOCAL_NETWORK
+                || !isLocalAddress(site_url)
+                || checkSelfPermission(PERMISSION_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED) {
+            action.run();
+            return;
+        }
+        pendingNetworkAction = action;
+        requestLocalNetwork.launch(PERMISSION_LOCAL_NETWORK);
+    }
+
+    /** 사설 IP(10.x, 172.16~31.x, 192.168.x), localhost 이면 로컬 네트워크 */
+    static boolean isLocalAddress(String url) {
+        String host = Uri.parse(url).getHost();
+        if (host == null) return false;
+        return host.equals("localhost") || host.endsWith(".local")
+                || host.startsWith("127.") || host.startsWith("10.") || host.startsWith("192.168.")
+                || host.matches("172\\.(1[6-9]|2\\d|3[01])\\..*");
+    }
+
+    /** 원인 파악용 예외 정보 (예: ConnectException: ...) */
+    private static String errorDetail(Exception e) {
+        if (e instanceof PhotoBlogApi.ApiException) return "";
+        String message = e.getMessage() == null ? "" : ": " + e.getMessage();
+        if (message.length() > 150) message = message.substring(0, 150) + "…";
+        return "\n(" + e.getClass().getSimpleName() + message + ")";
     }
 
     private String errorMessage(Exception e) {

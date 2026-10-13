@@ -3,6 +3,8 @@
 
     <!-- 인터넷 접근 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 17(API 37)부터 로컬 네트워크(에뮬레이터의 10.0.2.2, 같은 와이파이의 PC 등) 접속에 필요 -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <!-- 사진은 Photo Picker로 선택해서 저장공간 권한은 따로 필요 없음 -->
 
     <!-- networkSecurityConfig : 로컬 서버(http://10.0.2.2:8000) 접속을 위해 http 허용 -->

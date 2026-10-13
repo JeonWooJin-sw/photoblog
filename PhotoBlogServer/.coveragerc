@@ -1,0 +1,19 @@
+# coverage run manage.py test  ->  coverage report  ->  coverage html
+[run]
+branch = True
+source =
+    blog
+    api_checker
+    mysite
+omit =
+    */migrations/*
+    mysite/asgi.py
+    mysite/wsgi.py
+
+[report]
+show_missing = True
+skip_empty = True
+
+[html]
+directory = htmlcov
+title = PhotoBlog API Code Coverage

@@ -59,6 +59,7 @@
     <string name="server_local">로컬 서버 (%1$s)</string>
     <string name="server_cloud">PythonAnywhere (%1$s)</string>
     <string name="server_custom">직접 입력</string>
+    <string name="server_label_cloud">PythonAnywhere</string>
     <string name="err_server_url">http:// 또는 https:// 로 시작하는 주소를 입력하세요.</string>
 
     <!-- 상세 / 삭제 -->

@@ -637,7 +637,13 @@ public class MainActivity extends AppCompatActivity {
     // ------------------------------------------------------------------
     private void updateSubtitle() {
         String user = getUsername();
-        toolbar.setSubtitle(hostOf(site_url) + " · " + (user != null ? user : getString(R.string.not_logged_in)));
+        toolbar.setSubtitle(serverLabel(site_url) + " · " + (user != null ? user : getString(R.string.not_logged_in)));
+    }
+
+    /** 툴바에 보여줄 서버 이름 (클라우드 주소는 길어서 잘리므로 짧게) */
+    private String serverLabel(String url) {
+        if (CLOUD_SERVER.equals(url)) return getString(R.string.server_label_cloud);
+        return hostOf(url);
     }
 
     /** 액티비티가 닫힐 때 같이 취소되도록 목록에 넣고 실행 */

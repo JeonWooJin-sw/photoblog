@@ -9,7 +9,7 @@ Django로 만든 포토블로그 서버와, 서버와 연동되는 안드로이�
 photoblog/
 ├── PhotoBlogServer/   Django 서버 (REST API, 테스트, API 검증 엔진)
 ├── PhotoViewer/       Android 클라이언트 (Java)
-└── 모바일웹서비스 프로젝트 공통평가 01_수행 결과 보고서.docx
+└── 모바일웹서비스 프로젝트 공통평가 01_수행 결과 보고서_2023110399_전우진.docx
 ```
 
 - 서버 실행/테스트 방법 : [PhotoBlogServer/README.md](PhotoBlogServer/README.md)
